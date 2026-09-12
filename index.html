@@ -6,109 +6,112 @@
 <title>ゴールド・プラチナチェッカー</title>
 
 <style>
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,"Noto Sans JP",sans-serif;
-  background:linear-gradient(135deg,#fff8e8,#f4f4f4);
-  color:#333;
+* {
+  box-sizing: border-box;
 }
 
-.container{
-  max-width:600px;
-  margin:auto;
-  padding:20px 15px 40px;
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: linear-gradient(135deg,#fff8e1,#eeeeee);
+  color: #222;
 }
 
-h1{
-  text-align:center;
-  margin:10px 0 5px;
-  font-size:28px;
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px 15px 40px;
 }
 
-.subtitle{
-  text-align:center;
-  color:#777;
-  margin-bottom:20px;
+h1 {
+  text-align: center;
+  font-size: 28px;
+  margin: 10px 0 5px;
 }
 
-.card{
-  background:white;
-  border-radius:18px;
-  padding:20px;
-  margin-bottom:18px;
-  box-shadow:0 4px 15px rgba(0,0,0,.08);
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
 }
 
-label{
-  display:block;
-  font-weight:bold;
-  margin:12px 0 6px;
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 5px 18px rgba(0,0,0,.12);
 }
 
-select,input{
-  width:100%;
-  padding:13px;
-  font-size:17px;
-  border:1px solid #ccc;
-  border-radius:10px;
+h2 {
+  margin-top: 0;
+  font-size: 20px;
 }
 
-button{
-  width:100%;
-  border:0;
-  border-radius:12px;
-  padding:15px;
-  margin-top:18px;
-  font-size:18px;
-  font-weight:bold;
-  background:#222;
-  color:white;
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 12px;
+  margin-bottom: 6px;
 }
 
-button:active{
-  transform:scale(.98);
+select,
+input {
+  width: 100%;
+  padding: 13px;
+  font-size: 17px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
 }
 
-.result{
-  text-align:center;
-  display:none;
+button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #222;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
 }
 
-.face{
-  font-size:72px;
-  margin:5px 0;
+.result {
+  text-align: center;
+  display: none;
 }
 
-.verdict{
-  font-size:25px;
-  font-weight:bold;
-  margin:8px 0;
+.face {
+  font-size: 75px;
+  margin: 10px 0;
 }
 
-.message{
-  font-size:16px;
-  line-height:1.7;
+.verdict {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 10px;
 }
 
-.price{
-  font-size:30px;
-  font-weight:bold;
-  margin:10px 0;
+.price {
+  font-size: 28px;
+  font-weight: bold;
 }
 
-.note{
-  color:#777;
-  font-size:13px;
-  line-height:1.6;
+.message {
+  font-size: 17px;
+  line-height: 1.7;
 }
 
-footer{
-  text-align:center;
-  color:#999;
-  font-size:12px;
-  margin-top:25px;
+.note {
+  color: #777;
+  font-size: 13px;
+  margin-top: 15px;
+}
+
+.footer {
+  text-align: center;
+  color: #777;
+  font-size: 12px;
 }
 </style>
 </head>
@@ -118,31 +121,31 @@ footer{
 <div class="container">
 
 <h1>💰 ゴールド・プラチナチェッカー</h1>
-<div class="subtitle">金・プラチナの「買い時」をチェック</div>
+<div class="subtitle">今は「買い？売り？待ち？」を簡単チェック</div>
 
 <div class="card">
 
+<h2>相場を入力</h2>
+
 <label>金属</label>
 <select id="metal">
-  <option value="gold">ゴールド（金）</option>
+  <option value="gold">ゴールド</option>
   <option value="platinum">プラチナ</option>
 </select>
 
 <label>品位</label>
 <select id="purity">
-  <option value="18">K18</option>
-  <option value="24">純金 K24</option>
-  <option value="900">Pt900</option>
-  <option value="850">Pt850</option>
+  <option value="18">K18 / Pt900相当</option>
+  <option value="24">純金 / 純プラチナ</option>
 </select>
 
-<label>現在価格（円/g）</label>
-<input id="current" type="number" placeholder="例：15000">
+<label>現在の価格（1g）</label>
+<input id="price" type="number" placeholder="例：18000">
 
-<label>前回価格（円/g）</label>
-<input id="previous" type="number" placeholder="例：14500">
+<label>あなたが考えている購入価格（1g）</label>
+<input id="buyPrice" type="number" placeholder="例：17000">
 
-<button onclick="checkPrice()">買い時をチェックする</button>
+<button onclick="checkPrice()">判定する</button>
 
 </div>
 
@@ -150,33 +153,42 @@ footer{
 
 <div class="face" id="face">🙂</div>
 
-<div class="verdict" id="verdict"></div>
+<div class="verdict" id="verdict">チェック中</div>
 
 <div class="price" id="difference"></div>
 
 <div class="message" id="message"></div>
 
+<div class="note">
+※この判定は入力した価格をもとにした目安です。<br>
+実際の買取価格・販売価格とは異なる場合があります。
+</div>
+
 </div>
 
 <div class="card">
-<b>💡 このサイトについて</b>
-<p class="note">
-現在価格と前回価格を入力すると、価格の上昇・下落を比較して、
-「買い時」「様子見」「待った方がいい」を簡単にチェックできます。
-</p>
+
+<h2>📌 判定の目安</h2>
+
+<p>😊 <b>買い時</b>：現在価格より安く買える</p>
+<p>😐 <b>様子見</b>：価格差が小さい</p>
+<p>😞 <b>待ち</b>：現在価格より高く買う</p>
+<p>💰 <b>売り検討</b>：買取価格が高いとき</p>
+
 </div>
 
-<footer>
+<div class="footer">
 ゴールド・プラチナチェッカー
-</footer>
+</div>
 
 </div>
 
 <script>
-function checkPrice(){
 
-  const current = Number(document.getElementById("current").value);
-  const previous = Number(document.getElementById("previous").value);
+function checkPrice() {
+
+  const price = Number(document.getElementById("price").value);
+  const buyPrice = Number(document.getElementById("buyPrice").value);
 
   const result = document.getElementById("result");
   const face = document.getElementById("face");
@@ -184,56 +196,62 @@ function checkPrice(){
   const difference = document.getElementById("difference");
   const message = document.getElementById("message");
 
-  if(!current || !previous || previous <= 0){
-    alert("現在価格と前回価格を入力してください。");
+  if (!price || !buyPrice) {
+    alert("現在価格と購入価格を入力してください");
     return;
   }
 
-  const diff = current - previous;
-  const percent = (diff / previous) * 100;
-
-  difference.textContent =
-    (diff >= 0 ? "+" : "") +
-    diff.toLocaleString() +
-    " 円/g（" +
-    (percent >= 0 ? "+" : "") +
-    percent.toFixed(2) +
-    "%）";
-
-  if(percent <= -5){
-
-    face.textContent = "😄";
-    verdict.textContent = "買い時！";
-    message.textContent =
-      "前回より5%以上下がっています。かなり安くなっているので、購入を検討するチャンスです。";
-
-  }else if(percent < 0){
-
-    face.textContent = "🙂";
-    verdict.textContent = "やや買い時";
-    message.textContent =
-      "前回より少し下がっています。急がず価格を見ながら購入を検討してみましょう。";
-
-  }else if(percent <= 5){
-
-    face.textContent = "😐";
-    verdict.textContent = "様子見";
-    message.textContent =
-      "前回と大きな差はありません。もう少し価格の動きを見てもよさそうです。";
-
-  }else{
-
-    face.textContent = "😟";
-    verdict.textContent = "今は待った方がいい";
-    message.textContent =
-      "前回より5%以上高くなっています。急いで買わず、価格が下がるか様子を見るのがおすすめです。";
-  }
+  const diff = buyPrice - price;
+  const percent = (diff / price) * 100;
 
   result.style.display = "block";
+
+  if (diff <= -price * 0.05) {
+
+    face.textContent = "😊";
+    verdict.textContent = "かなり買い時！";
+    difference.textContent =
+      Math.abs(diff).toLocaleString() + "円/g 安い";
+
+    message.textContent =
+      "現在価格より5%以上安く買える計算です。条件が良ければ狙い目です。";
+
+  } else if (diff < 0) {
+
+    face.textContent = "🙂";
+    verdict.textContent = "買ってもいいかも";
+    difference.textContent =
+      Math.abs(diff).toLocaleString() + "円/g 安い";
+
+    message.textContent =
+      "現在価格より少し安く買えます。重量・品位・状態も確認しましょう。";
+
+  } else if (diff <= price * 0.05) {
+
+    face.textContent = "😐";
+    verdict.textContent = "もう少し様子見";
+    difference.textContent =
+      diff.toLocaleString() + "円/g 高い";
+
+    message.textContent =
+      "現在価格と大きな差はありません。もう少し安くなるのを待つのもありです。";
+
+  } else {
+
+    face.textContent = "😞";
+    verdict.textContent = "今は待ち";
+    difference.textContent =
+      diff.toLocaleString() + "円/g 高い";
+
+    message.textContent =
+      "現在価格より5%以上高いので、急いで買わず相場を見ながら待つのがおすすめです。";
+  }
+
   result.scrollIntoView({
-    behavior:"smooth"
+    behavior: "smooth"
   });
 }
+
 </script>
 
 </body>
