@@ -1,19 +1,240 @@
-verdict.textContent = "今は待ち";
-    difference.textContent =
-      diff.toLocaleString() + "円/g 高い";
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゴールド・プラチナチェッカー</title>
 
-    message.textContent =
-      "現在価格より5%以上高いので、急いで買わず相場を見ながら待つのがおすすめです。";
-  }
+<style>
+*{box-sizing:border-box}
 
-  result.scrollIntoView({
-    behavior: "smooth"
-  });
+body{
+  margin:0;
+  font-family:Arial,"Noto Sans JP",sans-serif;
+  background:linear-gradient(135deg,#fff8e8,#f4f4f4);
+  color:#333;
 }
 
+.container{
+  max-width:600px;
+  margin:auto;
+  padding:20px 15px 40px;
+}
+
+h1{
+  text-align:center;
+  margin:10px 0 5px;
+  font-size:28px;
+}
+
+.subtitle{
+  text-align:center;
+  color:#777;
+  margin-bottom:20px;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin:12px 0 6px;
+}
+
+select,input{
+  width:100%;
+  padding:13px;
+  font-size:17px;
+  border:1px solid #ccc;
+  border-radius:10px;
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:15px;
+  margin-top:18px;
+  font-size:18px;
+  font-weight:bold;
+  background:#222;
+  color:white;
+}
+
+button:active{
+  transform:scale(.98);
+}
+
+.result{
+  text-align:center;
+  display:none;
+}
+
+.face{
+  font-size:72px;
+  margin:5px 0;
+}
+
+.verdict{
+  font-size:25px;
+  font-weight:bold;
+  margin:8px 0;
+}
+
+.message{
+  font-size:16px;
+  line-height:1.7;
+}
+
+.price{
+  font-size:30px;
+  font-weight:bold;
+  margin:10px 0;
+}
+
+.note{
+  color:#777;
+  font-size:13px;
+  line-height:1.6;
+}
+
+footer{
+  text-align:center;
+  color:#999;
+  font-size:12px;
+  margin-top:25px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>💰 ゴールド・プラチナチェッカー</h1>
+<div class="subtitle">金・プラチナの「買い時」をチェック</div>
+
+<div class="card">
+
+<label>金属</label>
+<select id="metal">
+  <option value="gold">ゴールド（金）</option>
+  <option value="platinum">プラチナ</option>
+</select>
+
+<label>品位</label>
+<select id="purity">
+  <option value="18">K18</option>
+  <option value="24">純金 K24</option>
+  <option value="900">Pt900</option>
+  <option value="850">Pt850</option>
+</select>
+
+<label>現在価格（円/g）</label>
+<input id="current" type="number" placeholder="例：15000">
+
+<label>前回価格（円/g）</label>
+<input id="previous" type="number" placeholder="例：14500">
+
+<button onclick="checkPrice()">買い時をチェックする</button>
+
+</div>
+
+<div class="card result" id="result">
+
+<div class="face" id="face">🙂</div>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="price" id="difference"></div>
+
+<div class="message" id="message"></div>
+
+</div>
+
+<div class="card">
+<b>💡 このサイトについて</b>
+<p class="note">
+現在価格と前回価格を入力すると、価格の上昇・下落を比較して、
+「買い時」「様子見」「待った方がいい」を簡単にチェックできます。
+</p>
+</div>
+
+<footer>
+ゴールド・プラチナチェッカー
+</footer>
+
+</div>
+
+<script>
+function checkPrice(){
+
+  const current = Number(document.getElementById("current").value);
+  const previous = Number(document.getElementById("previous").value);
+
+  const result = document.getElementById("result");
+  const face = document.getElementById("face");
+  const verdict = document.getElementById("verdict");
+  const difference = document.getElementById("difference");
+  const message = document.getElementById("message");
+
+  if(!current || !previous || previous <= 0){
+    alert("現在価格と前回価格を入力してください。");
+    return;
+  }
+
+  const diff = current - previous;
+  const percent = (diff / previous) * 100;
+
+  difference.textContent =
+    (diff >= 0 ? "+" : "") +
+    diff.toLocaleString() +
+    " 円/g（" +
+    (percent >= 0 ? "+" : "") +
+    percent.toFixed(2) +
+    "%）";
+
+  if(percent <= -5){
+
+    face.textContent = "😄";
+    verdict.textContent = "買い時！";
+    message.textContent =
+      "前回より5%以上下がっています。かなり安くなっているので、購入を検討するチャンスです。";
+
+  }else if(percent < 0){
+
+    face.textContent = "🙂";
+    verdict.textContent = "やや買い時";
+    message.textContent =
+      "前回より少し下がっています。急がず価格を見ながら購入を検討してみましょう。";
+
+  }else if(percent <= 5){
+
+    face.textContent = "😐";
+    verdict.textContent = "様子見";
+    message.textContent =
+      "前回と大きな差はありません。もう少し価格の動きを見てもよさそうです。";
+
+  }else{
+
+    face.textContent = "😟";
+    verdict.textContent = "今は待った方がいい";
+    message.textContent =
+      "前回より5%以上高くなっています。急いで買わず、価格が下がるか様子を見るのがおすすめです。";
+  }
+
+  result.style.display = "block";
+  result.scrollIntoView({
+    behavior:"smooth"
+  });
+}
 </script>
 
 </body>
 </html>
-
-
