@@ -112,9 +112,9 @@ jobs:
               if rate >= 0.5:
                   return "😊", "売りを検討", diff
               elif rate <= -0.5:
-                  return "😢", "待ち", diff
+                  return "😢", "買いを検討", diff
               else:
-                  return "😐", "様子見", diff
+                  return "😐", "待ち", diff
 
           kface, kjudge, kdiff = judge(
               k18,
