@@ -1,0 +1,234 @@
+name: Update metal prices
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 */3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update prices
+        run: |
+          python3 - <<'PY'
+          import re, json, html, urllib.request
+          from pathlib import Path
+          from datetime import datetime, timezone, timedelta
+
+          URL = "https://gold.tanaka.co.jp/retanaka/price/"
+
+          req = urllib.request.Request(
+              URL,
+              headers={"User-Agent": "Mozilla/5.0"}
+          )
+
+          raw = urllib.request.urlopen(
+              req, timeout=30
+          ).read().decode("utf-8", "ignore")
+
+          text = html.unescape(
+              re.sub(r"<[^>]+>", " ", raw)
+          )
+          text = re.sub(r"\s+", " ", text)
+
+          gold = text.split("プラチナ製品", 1)[0]
+          platinum = text.split(
+              "プラチナ製品", 1
+          )[1].split("銀製品", 1)[0]
+
+          def price(pattern, body):
+              m = re.search(pattern, body)
+              if not m:
+                  raise RuntimeError("価格取得失敗")
+              return int(m.group(1).replace(",", ""))
+
+          k18 = price(
+              r"K18\s*¥?\s*([0-9,]+)", gold
+          )
+
+          pt900 = price(
+              r"(?:^|\s)900\s*¥?\s*([0-9,]+)",
+              platinum
+          )
+
+          jst = timezone(timedelta(hours=9))
+          now = datetime.now(jst)
+          today = now.strftime("%Y-%m-%d")
+
+          file = Path("history.json")
+
+          if file.exists():
+              try:
+                  history = json.loads(
+                      file.read_text(encoding="utf-8")
+                  )
+              except:
+                  history = []
+          else:
+              history = []
+
+          data = {
+              "date": today,
+              "k18": k18,
+              "pt900": pt900
+          }
+
+          if history and history[-1]["date"] == today:
+              history[-1] = data
+          else:
+              history.append(data)
+
+          history = history[-60:]
+
+          file.write_text(
+              json.dumps(
+                  history,
+                  ensure_ascii=False,
+                  indent=2
+              ),
+              encoding="utf-8"
+          )
+
+          previous = (
+              history[-2]
+              if len(history) >= 2
+              else None
+          )
+
+          def judge(current, old):
+              if old is None:
+                  return "😐", "データ蓄積中", None
+
+              diff = current - old
+              rate = diff / old * 100
+
+              if rate >= 0.5:
+                  return "😊", "売りを検討", diff
+              elif rate <= -0.5:
+                  return "😢", "待ち", diff
+              else:
+                  return "😐", "様子見", diff
+
+          kface, kjudge, kdiff = judge(
+              k18,
+              previous["k18"] if previous else None
+          )
+
+          pface, pjudge, pdiff = judge(
+              pt900,
+              previous["pt900"] if previous else None
+          )
+
+          def change(v):
+              if v is None:
+                  return "前日比：データ蓄積中"
+              sign = "+" if v > 0 else ""
+              return f"前日比：{sign}{v:,}円/g"
+
+          updated = now.strftime(
+              "%Y/%m/%d %H:%M"
+          )
+
+          page = f"""<!doctype html>
+          <html lang="ja">
+          <head>
+          <meta charset="utf-8">
+          <meta name="viewport"
+          content="width=device-width,initial-scale=1">
+          <title>今日の相場</title>
+
+          <style>
+          *{{box-sizing:border-box}}
+          body{{
+            margin:0;
+            background:#07111d;
+            color:white;
+            font-family:sans-serif
+          }}
+          main{{
+            max-width:700px;
+            margin:auto;
+            padding:18px
+          }}
+          .top,.card{{
+            background:#101c2b;
+            border-radius:22px;
+            padding:22px;
+            margin-bottom:16px
+          }}
+          .top{{text-align:center}}
+          .gold{{border:1px solid #b58b2b}}
+          .pt{{border:1px solid #52687c}}
+          .price{{
+            font-size:38px;
+            font-weight:bold;
+            margin:12px 0
+          }}
+          .face{{font-size:55px}}
+          .judge{{
+            font-size:24px;
+            font-weight:bold
+          }}
+          .sub{{color:#b9c7d3}}
+          a{{color:#67d4ee}}
+          </style>
+          </head>
+
+          <body>
+          <main>
+
+          <div class="top">
+          <h1>👑 今日の金・プラチナ相場</h1>
+          <div class="sub">
+          自動更新：{updated} JST
+          </div>
+          </div>
+
+          <div class="card gold">
+          <h2>🥇 金（K18）</h2>
+          <div class="price">{k18:,}円/g</div>
+          <p>{change(kdiff)}</p>
+          <div class="face">{kface}</div>
+          <div class="judge">{kjudge}</div>
+          </div>
+
+          <div class="card pt">
+          <h2>⚪ プラチナ（Pt900）</h2>
+          <div class="price">{pt900:,}円/g</div>
+          <p>{change(pdiff)}</p>
+          <div class="face">{pface}</div>
+          <div class="judge">{pjudge}</div>
+          </div>
+
+          <div class="card">
+          価格基準：
+          田中貴金属 RE:TANAKA<br><br>
+          <a href="{URL}">
+          公式価格を確認
+          </a>
+          </div>
+
+          </main>
+          </body>
+          </html>"""
+
+          Path("market.html").write_text(
+              page,
+              encoding="utf-8"
+          )
+          PY
+
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add market.html history.json
+          git diff --cached --quiet || git commit -m "相場を自動更新"
+          git push
