@@ -50,12 +50,12 @@ jobs:
               return int(m.group(1).replace(",", ""))
 
           k18 = price(
-              r"K18\s*¥?\s*([0-9,]+)", gold
+              r"K18\s*¥?\s*([0-9,]+)", text
           )
 
           pt900 = price(
               r"(?:^|\s)900\s*¥?\s*([0-9,]+)",
-              platinum
+              text
           )
 
           jst = timezone(timedelta(hours=9))
